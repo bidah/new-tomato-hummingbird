@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "name": "new-tomato-hummingbird",
+    "slug": "new-tomato-hummingbird",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "ios": { "bundleIdentifier": "computer.inti.newtomatohummingbird" },
+    "scheme": "newtomatohummingbird"
+  }
+}
