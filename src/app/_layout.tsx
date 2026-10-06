@@ -11,7 +11,7 @@ import {
   WorkSans_600SemiBold,
   WorkSans_700Bold,
 } from '@expo-google-fonts/work-sans';
-import { colors } from '../theme';
+import { colors, font } from '../theme';
 
 export default function RootLayout() {
   const [loaded] = useFonts({ WorkSans_400Regular, WorkSans_500Medium, WorkSans_600SemiBold, WorkSans_700Bold });
@@ -20,9 +20,20 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <KeyboardProvider>
-        <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.neutral } }}>
-          <Stack.Screen name="index" />
-          <Stack.Screen name="line/[id]" />
+        <Stack
+          screenOptions={{
+            contentStyle: { backgroundColor: colors.neutral },
+            headerTransparent: true,
+            headerShadowVisible: false,
+            headerLargeTitle: true,
+            headerLargeTitleShadowVisible: false,
+            headerTintColor: colors.primary,
+            headerTitleStyle: { fontFamily: font.bold, color: colors.primary },
+            headerLargeTitleStyle: { fontFamily: font.bold, color: colors.primary },
+            headerBackButtonDisplayMode: 'minimal',
+          }}>
+          <Stack.Screen name="index" options={{ title: 'Lines' }} />
+          <Stack.Screen name="line/[id]" options={{ title: '' }} />
           <Stack.Screen
             name="new"
             options={{
@@ -30,6 +41,7 @@ export default function RootLayout() {
               sheetAllowedDetents: [0.62, 1],
               sheetGrabberVisible: true,
               sheetCornerRadius: 28,
+              headerShown: false,
             }}
           />
         </Stack>

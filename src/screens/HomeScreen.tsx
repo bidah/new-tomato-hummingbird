@@ -1,7 +1,6 @@
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { BlurView } from 'expo-blur';
 import { SymbolView } from 'expo-symbols';
 import ContextMenu from 'react-native-context-menu-view';
 import * as Haptics from 'expo-haptics';
@@ -11,7 +10,7 @@ import { aisleIndex } from '../aisles';
 import { colors, font, lines, radius, space, type } from '../theme';
 import { LineBadge } from '../components/Badges';
 import { Tap } from '../components/Tap';
-import { Glass } from '../components/Glass';
+import { GlassButton } from '../components/GlassButton';
 
 function RouteStrip({ line }: { line: Line }) {
   const color = lines[line.line].color;
@@ -96,10 +95,10 @@ export default function HomeScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: colors.neutral }}>
       <ScrollView
-        contentContainerStyle={{ paddingTop: insets.top + space.md, paddingBottom: insets.bottom + 120, paddingHorizontal: space.md }}
+        contentInsetAdjustmentBehavior="automatic"
+        contentContainerStyle={{ paddingTop: 4, paddingBottom: insets.bottom + 120, paddingHorizontal: space.md }}
         showsVerticalScrollIndicator={false}>
         <Text style={type.label}>{today}</Text>
-        <Text style={[type.display, { marginTop: 6 }]}>Lines</Text>
         <View style={styles.summary}>
           <Text style={styles.summaryText}>
             {all.length} {all.length === 1 ? 'line' : 'lines'} running
@@ -123,20 +122,15 @@ export default function HomeScreen() {
         </View>
       </ScrollView>
 
-      <BlurView intensity={40} tint="light" style={{ position: 'absolute', top: 0, left: 0, right: 0, height: insets.top }} />
-
       <View style={[styles.dock, { bottom: insets.bottom + 8 }]} pointerEvents="box-none">
-        <Glass style={styles.dockGlass} radius={radius.md + 6} interactive>
-          <Tap
-            onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              router.push('/new');
-            }}
-            style={styles.primaryBtn} pressedStyle={{ opacity: 0.85 }}>
-            <SymbolView name="plus" tintColor={colors.onPrimary} size={16} weight="bold" />
-            <Text style={styles.primaryBtnText}>Open new line</Text>
-          </Tap>
-        </Glass>
+        <GlassButton
+          label="Open new line"
+          systemImage="plus"
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            router.push('/new');
+          }}
+        />
       </View>
     </View>
   );
@@ -154,15 +148,4 @@ const styles = StyleSheet.create({
   stripStops: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 2 },
   stripStop: { width: 12, height: 12, borderRadius: 6, borderWidth: 2.5, borderColor: colors.primary, backgroundColor: colors.surface },
   dock: { position: 'absolute', left: 0, right: 0, alignItems: 'center' },
-  dockGlass: { padding: 6 },
-  primaryBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: colors.tertiary,
-    borderRadius: radius.md,
-    paddingVertical: 14,
-    paddingHorizontal: 22,
-  },
-  primaryBtnText: { fontFamily: font.semibold, fontSize: 16, color: colors.onPrimary },
 });

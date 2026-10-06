@@ -7,6 +7,7 @@ import { useStore } from '../store';
 import { colors, font, lines, radius, space, type, type LineKey } from '../theme';
 import { Tap } from '../components/Tap';
 import { LineBadge } from '../components/Badges';
+import { GlassButton } from '../components/GlassButton';
 
 const keys = Object.keys(lines) as LineKey[];
 
@@ -64,9 +65,9 @@ export default function NewLineScreen() {
           />
         ))}
       </View>
-      <Tap onPress={open} style={styles.btn} pressedStyle={{ opacity: 0.85 }}>
-        <Text style={styles.btnText}>Open line</Text>
-      </Tap>
+      <View style={{ marginTop: space.lg, alignItems: 'center' }}>
+        <GlassButton label="Open line" systemImage="tram.fill" onPress={open} />
+      </View>
     </View>
   );
 }
@@ -77,6 +78,4 @@ const styles = StyleSheet.create({
   grid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', rowGap: 14, marginTop: 14 },
   ring: { padding: 3, borderRadius: 99, borderWidth: 2.5, borderColor: 'transparent' },
   swatch: { width: '31%', alignItems: 'center', paddingVertical: 6 },
-  btn: { marginTop: space.lg, backgroundColor: colors.tertiary, borderRadius: radius.md, paddingVertical: 14, paddingHorizontal: 20, alignItems: 'center' },
-  btnText: { fontFamily: font.semibold, fontSize: 16, color: colors.onPrimary },
 });

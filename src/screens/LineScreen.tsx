@@ -1,11 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import ContextMenu from 'react-native-context-menu-view';
 import * as Haptics from 'expo-haptics';
-import { BlurView } from 'expo-blur';
 import { KeyboardStickyView } from 'react-native-keyboard-controller';
 import Animated, {
   FadeIn,
@@ -24,6 +23,7 @@ import { colors, font, lines, radius, space, type } from '../theme';
 import { LineBadge, StationBadge } from '../components/Badges';
 import { Tap } from '../components/Tap';
 import { Glass } from '../components/Glass';
+import { GlassButton } from '../components/GlassButton';
 import { Confetti } from '../components/Confetti';
 
 const RAIL = 56; // width of the left column that carries the line
@@ -141,17 +141,37 @@ export default function LineScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.neutral }}>
+      <Stack.Screen options={{ title: line.name }} />
+      <Stack.Toolbar placement="right">
+        <Stack.Toolbar.Menu icon="ellipsis">
+          <Stack.Toolbar.MenuAction icon="arrow.counterclockwise" onPress={() => resetLine(line.id)}>
+            Uncheck all stops
+          </Stack.Toolbar.MenuAction>
+          <Stack.Toolbar.MenuAction icon="checkmark.circle" onPress={() => clearDone(line.id)}>
+            Clear collected stops
+          </Stack.Toolbar.MenuAction>
+          <Stack.Toolbar.MenuAction
+            icon="trash"
+            destructive
+            onPress={() => {
+              router.back();
+              setTimeout(() => removeLine(line.id), 350);
+            }}>
+            Delete line
+          </Stack.Toolbar.MenuAction>
+        </Stack.Toolbar.Menu>
+      </Stack.Toolbar>
       <ScrollView
         keyboardDismissMode="on-drag"
+        contentInsetAdjustmentBehavior="automatic"
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingTop: insets.top + 64, paddingBottom: insets.bottom + 140 }}>
+        contentContainerStyle={{ paddingTop: 4, paddingBottom: insets.bottom + 140 }}>
         {/* Signage */}
         <View style={{ paddingHorizontal: space.md }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
             <LineBadge line={line.line} size={40} />
             <Text style={type.label}>{lines[line.line].name} line</Text>
           </View>
-          <Text style={[type.h1, { marginTop: 14 }]}>{line.name}</Text>
           <View style={styles.progressRow}>
             <Text style={[type.label, { color: colors.primary }]}>
               {total === 0 ? 'Empty line' : arrived ? 'All stops collected' : `${left} of ${total} stops left`}
@@ -242,40 +262,6 @@ export default function LineScreen() {
         </View>
       </ScrollView>
 
-      {/* Status bar scrim — content scrolls under it */}
-      <BlurView intensity={40} tint="light" style={[styles.scrim, { height: insets.top }]} />
-
-      {/* Floating glass chrome */}
-      <View style={[styles.topBar, { top: insets.top + 4 }]}>
-        <Glass interactive style={styles.roundBtn}>
-          <Tap hitSlop={8} onPress={() => router.back()} style={styles.roundHit}>
-            <SymbolView name="chevron.left" tintColor={colors.primary} size={18} weight="semibold" />
-          </Tap>
-        </Glass>
-        <ContextMenu
-          dropdownMenuMode
-          actions={[
-            { title: 'Uncheck all stops', systemIcon: 'arrow.counterclockwise' },
-            { title: 'Clear collected stops', systemIcon: 'checkmark.circle' },
-            { title: 'Delete line', systemIcon: 'trash', destructive: true },
-          ]}
-          onPress={(e) => {
-            const i = e.nativeEvent.index;
-            if (i === 0) resetLine(line.id);
-            if (i === 1) clearDone(line.id);
-            if (i === 2) {
-              router.back();
-              setTimeout(() => removeLine(line.id), 350);
-            }
-          }}>
-          <Glass interactive style={styles.roundBtn}>
-            <View style={styles.roundHit}>
-              <SymbolView name="ellipsis" tintColor={colors.primary} size={18} weight="semibold" />
-            </View>
-          </Glass>
-        </ContextMenu>
-      </View>
-
       <KeyboardStickyView style={styles.composerWrap} offset={{ closed: 0, opened: insets.bottom - 8 }}>
         <View style={{ paddingBottom: insets.bottom + 8, paddingHorizontal: 12 }}>
           <Glass radius={radius.lg + 10} tint="rgba(255,255,255,0.55)" style={styles.composer}>
@@ -294,12 +280,7 @@ export default function LineScreen() {
               submitBehavior="submit"
               onSubmitEditing={submit}
             />
-            <Tap
-              onPress={submit}
-              disabled={!draft.trim()}
-              style={[styles.send, { backgroundColor: draft.trim() ? colors.tertiary : '#C9C9C9' }]}>
-              <SymbolView name="arrow.up" tintColor={colors.onPrimary} size={16} weight="bold" />
-            </Tap>
+            <GlassButton label="Add" systemImage="arrow.up" iconOnly size="regular" onPress={submit} isDisabled={!draft.trim()} />
           </Glass>
         </View>
       </KeyboardStickyView>
@@ -364,12 +345,7 @@ const styles = StyleSheet.create({
   },
   empty: { alignItems: 'center', paddingHorizontal: space.lg, paddingTop: 12 },
   emptyRail: { width: 6, height: 70, borderRadius: 3 },
-  scrim: { position: 'absolute', top: 0, left: 0, right: 0 },
-  topBar: { position: 'absolute', left: 12, right: 12, flexDirection: 'row', justifyContent: 'space-between' },
-  roundBtn: { width: 44, height: 44 },
-  roundHit: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   composerWrap: { position: 'absolute', left: 0, right: 0, bottom: 0 },
   composer: { flexDirection: 'row', alignItems: 'center', padding: 6, gap: 6 },
   input: { flex: 1, height: 40, fontFamily: font.regular, fontSize: 16, color: colors.primary },
-  send: { width: 38, height: 38, borderRadius: radius.md + 2, alignItems: 'center', justifyContent: 'center' },
 });
