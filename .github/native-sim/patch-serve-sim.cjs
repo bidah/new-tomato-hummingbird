@@ -1,4 +1,4 @@
-// native-sim-template-version: 26
+// native-sim-template-version: 27
 /**
  * Patches @expo/serve-sim 0.4.0's input-socket admission, in place.
  *
@@ -115,10 +115,18 @@ if (!html.includes('</head>')) {
   console.error('patch-serve-sim: </head> not found in the stream page — serve-sim changed, review the patch');
   process.exit(1);
 }
-html = html.replace('</head>', () => `${mobileCss}</head>`);
+// Input in the page keeps the session alive: the gate stamps its activity
+// file on /__native-sim/keepalive, and an embedding page (inti.computer) hears
+// a postMessage so it can keep its own machine up too. Once a minute at most.
+const activityJs =
+  '<script>(()=>{let t=0;const f=()=>{const n=Date.now();if(n-t<60000)return;t=n;' +
+  "fetch('/__native-sim/keepalive',{method:'POST',credentials:'same-origin'}).catch(()=>{});" +
+  "try{if(parent!==window)parent.postMessage({type:'native-sim:activity'},'*')}catch{}};" +
+  "for(const e of['pointerdown','keydown','wheel'])addEventListener(e,f,{passive:true,capture:true})})()</script>";
+html = html.replace('</head>', () => `${mobileCss}${activityJs}</head>`);
 src = src.replace(page, () => `Buffer.from("${Buffer.from(html, 'utf-8').toString('base64')}","base64")`);
 
 // Appended, not prepended: the bundle starts with a shebang line.
 src = src + '\n/* native-sim: input sockets patched */\n';
 fs.writeFileSync(file, src);
-console.log(`serve-sim patched: input cap ${cap} 8 → 64, heartbeat on input sockets, EAS Simulator link removed, mobile toolbar trimmed`);
+console.log(`serve-sim patched: input cap ${cap} 8 → 64, heartbeat on input sockets, EAS Simulator link removed, mobile toolbar trimmed, input keeps the session alive`);

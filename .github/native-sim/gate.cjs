@@ -1,4 +1,4 @@
-// native-sim-template-version: 19
+// native-sim-template-version: 20
 /**
  * native-sim auth gate.
  *
@@ -12,7 +12,14 @@
  * NATIVE_SIM_AGENT_PORT is set, `/agent-device/*` is routed to the local
  * `agent-device proxy` instead of serve-sim, so one URL carries both the
  * human-facing stream and the agent-facing control API.
+ *
+ * And it is where the session learns someone is still using it: every
+ * agent-device request, and every POST to /__native-sim/keepalive (sent by the
+ * stream page on input, and by a host whose user or agent is still working),
+ * stamps NATIVE_SIM_ACTIVITY_FILE, which the workflow's hold step reads to
+ * push the session's end out.
  */
+const fs = require('node:fs');
 const http = require('node:http');
 const net = require('node:net');
 
@@ -25,6 +32,13 @@ const AGENT_PREFIX = '/agent-device';
 const TARGET_HOST = '127.0.0.1';
 const PORT = Number(process.env.NATIVE_SIM_GATE_PORT || 3199);
 const COOKIE = 'native_sim_k';
+const ACTIVITY_FILE = process.env.NATIVE_SIM_ACTIVITY_FILE || '';
+
+/** Records that someone used the session just now (the file's mtime is the time). */
+function markActivity() {
+  if (!ACTIVITY_FILE) return;
+  try { fs.writeFileSync(ACTIVITY_FILE, String(Date.now())); } catch {}
+}
 
 if (!TOKEN) {
   console.error('NATIVE_SIM_GATE_TOKEN is required — refusing to proxy an unauthenticated simulator');
@@ -98,7 +112,15 @@ const server = http.createServer((req, res) => {
     return;
   }
 
+  if (pathnameOf(req) === '/__native-sim/keepalive') {
+    markActivity();
+    res.writeHead(204, { 'cache-control': 'no-store' });
+    res.end();
+    return;
+  }
+
   const agent = isAgentRoute(req);
+  if (agent) markActivity();
 
   // Trade the query token for a cookie so the key stops travelling in URLs
   // (and so the preview's own fetches and WebSocket upgrades carry it). Never
