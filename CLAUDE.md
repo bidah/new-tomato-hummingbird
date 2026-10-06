@@ -46,7 +46,7 @@ ones, uninstall it and pick another.
 
 ## Code
 
-- Entry point: `index.ts` → `src/App.tsx`.
+- Entry point: Expo Router (`expo-router/entry`), routes in `src/app/`. Do not add `@react-navigation/*` — expo-router (SDK 56+) refuses to bundle alongside it.
 - Style with NativeWind (`className`, Tailwind classes) or `StyleSheet`.
 
 ## Seeing your changes

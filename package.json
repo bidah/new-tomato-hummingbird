@@ -2,7 +2,7 @@
   "name": "new-tomato-hummingbird",
   "version": "1.0.0",
   "private": true,
-  "main": "index.ts",
+  "main": "expo-router/entry",
   "scripts": {
     "start": "native-now start",
     "push": "native-now push",
@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@expo-google-fonts/work-sans": "0.4.2",
     "@expo/metro-runtime": "57.0.15",
     "@expo/ui": "57.0.16",
     "@expo/vector-icons": "15.1.1",
@@ -152,7 +153,8 @@
     "react-native-worklets": "0.10.1",
     "react-native-zip-archive": "9.5.1",
     "tailwind-merge": "3.6.0",
-    "tailwindcss": "3.4.19"
+    "tailwindcss": "3.4.19",
+    "zustand": "5.0.15"
   },
   "devDependencies": {
     "@babel/core": "7.29.7",
